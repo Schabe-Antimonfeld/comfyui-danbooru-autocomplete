@@ -1,0 +1,146 @@
+#dac-dropdown {
+  position: fixed;
+  z-index: 2147483647;
+  background: #12121e;
+  border: 1px solid #3a5af0;
+  border-radius: 7px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.7);
+  max-height: 320px;
+  overflow-y: auto;
+  min-width: 260px;
+  max-width: 440px;
+  font: 12px/1.4 "Segoe UI", system-ui, monospace;
+  display: none;
+  pointer-events: auto;
+}
+
+#dac-dropdown::-webkit-scrollbar {
+  width: 4px;
+}
+
+#dac-dropdown::-webkit-scrollbar-thumb {
+  background: #3a5af0;
+  border-radius: 2px;
+}
+
+.dac-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px;
+  font-size: 10px;
+  color: #555;
+  background: #0a0a16;
+  border-bottom: 1px solid #222240;
+  letter-spacing: 0.5px;
+  user-select: none;
+}
+
+.dac-header-src {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.dac-header-src.online {
+  background: #0f3020;
+  color: #4ef17a;
+  border: 1px solid #4ef17a44;
+}
+
+.dac-header-src.local {
+  background: #2a1a00;
+  color: #f1964e;
+  border: 1px solid #f1964e44;
+}
+
+.dac-header-src.loading {
+  background: #1a1a30;
+  color: #888;
+  border: 1px solid #44448888;
+}
+
+.dac-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #1a1a2e;
+  transition: background 0.08s;
+}
+
+.dac-item:last-child {
+  border-bottom: none;
+}
+
+.dac-item:hover,
+.dac-item.dac-sel {
+  background: #1e1e40;
+}
+
+.dac-tag {
+  flex: 1;
+  color: #dde;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dac-tag em {
+  font-style: normal;
+  color: #5af;
+  font-weight: 700;
+}
+
+.dac-cnt {
+  color: #666;
+  font-size: 10px;
+  min-width: 38px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.dac-cat {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  min-width: 54px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+#dac-status {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  z-index: 99998;
+  font: 10px monospace;
+  padding: 2px 7px;
+  border-radius: 10px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+#dac-status.show {
+  opacity: 1;
+}
+
+#dac-status.online {
+  background: #0f3020;
+  color: #4ef17a;
+  border: 1px solid #4ef17a66;
+}
+
+#dac-status.local {
+  background: #2a1a00;
+  color: #f1964e;
+  border: 1px solid #f1964e66;
+}
+
+#dac-status.error {
+  background: #2a0a0a;
+  color: #f14e4e;
+  border: 1px solid #f14e4e66;
+}
