@@ -60,20 +60,6 @@ ComfyUI/
 | 🟢 绿色 | Character（角色） |
 | 🔴 红色 | Meta（元数据） |
 
-## 目录结构
-
-```
-comfyui-danbooru-autocomplete/
-├── __init__.py          # 插件入口，注册 API 路由
-├── setup.py             # 数据库初始化脚本
-├── README.md            # 说明文档
-├── web/
-│   └── js/
-│       └── danbooru_autocomplete.js  # 前端自动补全逻辑
-└── data/
-    └── danbooru_tags.txt             # Tag 数据库（自动生成）
-```
-
 ## 工作原理
 
 1. `__init__.py` 在 ComfyUI 服务端注册 `/danbooru-autocomplete/tags?q=<query>` API
