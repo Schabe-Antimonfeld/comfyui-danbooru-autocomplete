@@ -16,6 +16,11 @@
 
 ### 1. 复制插件
 
+将仓库克隆到本地
+```
+git clone https://github.com/Schabe-Antimonfeld/comfyui-danbooru-autocomplete.git
+```
+
 将整个 `comfyui-danbooru-autocomplete` 文件夹复制到 ComfyUI 的自定义节点目录：
 
 ```
@@ -70,12 +75,15 @@ ComfyUI/
 ## 常见问题
 
 **Q: 下拉菜单没有出现？**
-- 确认 `data/danbooru_tags.txt` 文件存在
+- 确认 `data/` 内有合法的`.txt` 或 `.csv` 文件存在(正常情况已经内置，各一份)
 - 打开浏览器控制台查看是否有报错
 - 确认输入了至少 2 个字符
 
 **Q: 如何添加自定义 tag？**  
-直接编辑 `data/danbooru_tags.txt`，每行格式：`tag_name,count,category`
+在 `data/` 内创建一个新的 `.txt` 或 `.csv` 文件
+txt每行格式：`tag_name,category,count`
+csv需包含`raw`, `category`, `count`三列, 其余随意
+具体格式可参考 `data/` 下的两个文件 [danbooru.txt](./data/danbooru.txt) 与 [danbooru.csv](./data/danbooru.csv)
 
 **Q: 是否支持中文搜索？**  
 Danbooru 标签均为英文，暂时不支持中文搜索。
