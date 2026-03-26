@@ -19,7 +19,7 @@ def to_display(name: str) -> str:
 
 def load_txt(file_path: str) -> List[TagTuple]:
     """加载txt格式的tag, 每行格式为：raw,count,category
-    @param file: txt文件路径
+    @param file_path: txt文件路径
     @return: 加载的tag列表，每个元素为(raw, display, count, category)的元组
     """
     tags: List[TagTuple] = []
@@ -32,7 +32,6 @@ def load_txt(file_path: str) -> List[TagTuple]:
             parts = line.split(",")
             raw = parts[0]
 
-            # txt 每行格式为 raw,count,category
             try:
                 count = int(parts[1]) if len(parts) > 1 else 0
             except ValueError:
@@ -49,7 +48,7 @@ def load_txt(file_path: str) -> List[TagTuple]:
 
 def load_csv(file_path: str) -> List[TagTuple]:
     """加载csv格式的tag, 该csv应包含: raw,count,category
-    @param file: csv文件路径
+    @param file_path: csv文件路径
     @return: 加载的tag列表，每个元素为(raw, display, count, category)的元组
     """
     tags: List[TagTuple] = []

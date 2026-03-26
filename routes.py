@@ -16,7 +16,7 @@ async def get_tags(request: web.Request)->web.Response:
     @param request: HTTP请求对象，包含查询参数:
         - q: 搜索查询字符串
         - limit: 返回结果的最大数量（可选，默认为20，最大为50）
-    @return: JSON响应，包含匹配的标签列表，每个标签包含raw、display、count和category字段
+    @return: JSON响应，包含匹配的标签列表
     '''
     query = request.rel_url.query.get("q", "").strip().lower()
     try:

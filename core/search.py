@@ -40,7 +40,7 @@ def search_tags(tags: Sequence[TagTuple], query: str, limit: int) -> List[Dict[s
         elif is_contain:
             contain_hits.append(item)
 
-        if len(prefix_hits) >= limit and len(contain_hits) >= limit:
+        if len(prefix_hits) >= limit:
             break
 
     return (prefix_hits + contain_hits)[:limit]

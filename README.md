@@ -23,19 +23,6 @@ git clone https://github.com/Schabe-Antimonfeld/comfyui-danbooru-autocomplete.gi
 
 将整个 `comfyui-danbooru-autocomplete` 文件夹复制到 ComfyUI 的自定义节点目录：
 
-```
-ComfyUI/
-└── custom_nodes/
-    └── comfyui-danbooru-autocomplete/
-        ├── __init__.py
-        ├── web/
-        │   ├── js/
-        │   │   └── danbooru_autocomplete.js
-        │   └── css/
-        │       └── danbooru_autocomplete.css
-        └── data/
-            └── danbooru_tags.txt
-```
 ### 2. 重启 ComfyUI
 
 重启后打开任意包含 `CLIPTextEncode` 节点的工作流，在文本框中输入即可看到补全。
