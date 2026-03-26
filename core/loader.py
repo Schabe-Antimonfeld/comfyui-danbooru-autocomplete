@@ -32,15 +32,16 @@ def load_txt(file_path: str) -> List[TagTuple]:
             parts = line.split(",")
             raw = parts[0]
 
+            # txt 每行格式为 raw,count,category
             try:
-                category = int(parts[1]) if len(parts) > 2 else 0
-            except ValueError:
-                category = 0
-
-            try:
-                count = int(parts[2]) if len(parts) > 1 else 0
+                count = int(parts[1]) if len(parts) > 1 else 0
             except ValueError:
                 count = 0
+
+            try:
+                category = int(parts[2]) if len(parts) > 2 else 0
+            except ValueError:
+                category = 0
 
             tags.append((raw, to_display(raw), count, category))
     return tags
