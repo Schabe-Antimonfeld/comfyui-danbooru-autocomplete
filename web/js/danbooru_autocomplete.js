@@ -9,7 +9,7 @@ const CATEGORY_NAMES = {
   0: "general", 1: "artist", 3: "copyright", 4: "character", 5: "meta",
 };
 
-const DANBOORU_API = "https://danbooru.donmai.us/tags.json";
+const ONLINE_API = "/danbooru-autocomplete/online-tags";
 const LOCAL_API = "/danbooru-autocomplete/tags";
 const ONLINE_FAIL_THRESHOLD = 3;
 const ONLINE_RETRY_MS = 60_000;
@@ -200,37 +200,19 @@ function insertTag(tag) {
   ta.focus();
 }
 
-function toDisplay(raw) {
-  return raw.replace(/_/g, " ")
-            .replace(/\(/g, "\\(")
-            .replace(/\)/g, "\\)");
-}
-
-function normalizeDanbooruResponse(apiItems) {
-  return apiItems.map(item => ({
-    tag:      toDisplay(item.name ?? ""),
-    raw:      item.name ?? "",
-    count:    item.post_count ?? 0,
-    category: item.category  ?? 0,
-  }));
-}
-
 function isOnlineAvailable() {
   if (onlineFailCount < ONLINE_FAIL_THRESHOLD) return true;
   return Date.now() - onlineDisabledAt > ONLINE_RETRY_MS;
 }
 
 async function fetchFromDanbooru(query, signal) {
-  const url = new URL(DANBOORU_API);
-  url.searchParams.set("search[name_matches]", `${query}*`);
-  url.searchParams.set("search[order]", "count");
-  url.searchParams.set("limit", "20");
-  url.searchParams.set("only", "name,post_count,category");
-
-  const r = await fetch(url.toString(), { signal, mode: "cors" });
+  const r = await fetch(
+    `${ONLINE_API}?q=${encodeURIComponent(query)}&limit=20`,
+    { signal }
+  );
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   const data = await r.json();
-  return normalizeDanbooruResponse(Array.isArray(data) ? data : []);
+  return Array.isArray(data) ? data : [];
 }
 
 async function fetchFromLocal(query, signal) {
