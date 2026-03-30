@@ -5,6 +5,8 @@
 ## 功能特性
 
 - 🔍 **实时搜索**：输入 2 个字符后自动触发补全
+- 🌐 **在线优先 + 本地降级**：优先使用 Danbooru 在线接口，失败后自动回退本地词库
+- 🧭 **代理支持**：支持 HTTP / SOCKS5 代理访问在线 Danbooru
 - 🎨 **分类高亮**：不同颜色区分 general / artist / copyright / character / meta 标签
 - 📊 **使用频次**：显示每个 tag 的使用次数（K/M 简写）
 - ⌨️ **键盘操作**：方向键选择，Enter/Tab 确认，Esc 关闭
@@ -52,12 +54,39 @@ git clone https://github.com/Schabe-Antimonfeld/comfyui-danbooru-autocomplete.gi
 | 🟢 绿色 | Character（角色） |
 | 🔴 红色 | Meta（元数据） |
 
-## 工作原理
+## 代理配置
 
-1. `__init__.py` 在 ComfyUI 服务端注册 `/danbooru-autocomplete/tags?q=<query>` API
-2. 前端 JS 监听文本框 `input` 事件，防抖 150ms 后发送请求
-3. 服务端读取 `danbooru_tags.txt`，过滤匹配并按前缀优先 + 频次排序返回
-4. 前端渲染下拉菜单，处理键盘/鼠标交互
+在线查询 Danbooru 使用后端接口 `/danbooru-autocomplete/online-tags`，代理由以下文件控制：
+
+- `configs/proxy_config.json`
+
+默认配置示例：
+
+```json
+{
+	"proxy_type": "http",
+	"proxy_host": "127.0.0.1",
+	"proxy_port": ""
+}
+```
+
+字段说明：
+
+- `proxy_type`：支持 `http`、`socks5`、`socks5h`
+- `proxy_host`：代理主机地址，例如 `127.0.0.1`
+- `proxy_port`：代理端口；留空表示不使用代理（直连）
+
+行为规则：
+
+- `proxy_port` 为空、端口非法、或 `proxy_type` 非法时，自动切换为直连模式
+- `socks5/socks5h` 需要 `aiohttp-socks`（已在 `requirements.txt` 中声明）
+- 在线请求超时（8 秒）或失败时，前端会自动回退到本地词库查询
+
+推荐场景：
+
+- 无法直接访问 Danbooru：配置 HTTP/SOCKS5 代理
+- 仅需本地词库：将 `proxy_port` 留空，插件会按直连失败后回退本地，稍作等待即可
+- 网络不稳定：保持默认在线优先，插件会自动处理降级
 
 ## 常见问题
 
@@ -75,3 +104,12 @@ csv需包含`raw`, `category`, `count`三列, 其余随意
 **Q: 是否支持中文搜索？**  
 Danbooru 标签均为英文，暂时不支持中文搜索。
 以后有计划添加部分翻译与中文搜索功能。
+
+**Q: 配了代理但在线搜索仍失败？**
+- 检查 `configs/proxy_config.json` 是否为合法 JSON
+- 检查 `proxy_type` 是否为 `http` / `socks5`
+- 检查 `proxy_port` 是否为 1~65535 的整数
+- 若使用 SOCKS5，确认环境已安装 `aiohttp-socks`
+
+**Q: 如何确认当前是在在线模式还是本地模式？**
+- 补全下拉标题会显示 `Danbooru Live`（在线）或 `Local`（本地）
