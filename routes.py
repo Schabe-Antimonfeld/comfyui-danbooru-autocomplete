@@ -1,5 +1,6 @@
 import json
 import os
+from importlib import import_module
 
 import server  # type: ignore
 from aiohttp import ClientError, ClientSession, ClientTimeout, web
@@ -15,7 +16,7 @@ _ONLINE_API = "https://danbooru.donmai.us/tags.json"
 
 def _load_proxy_config() -> dict[str, str]:
     """Load proxy config from ./configs/proxy_config.json."""
-    default = {"proxy_host": "127.0.0.1", "proxy_port": ""}
+    default = {"proxy_type": "http", "proxy_host": "127.0.0.1", "proxy_port": ""}
     if not os.path.isfile(_CONFIG_PATH):
         return default
 
@@ -25,39 +26,65 @@ def _load_proxy_config() -> dict[str, str]:
     except (OSError, ValueError, json.JSONDecodeError):
         return default
 
+    proxy_type = str(data.get("proxy_type", default["proxy_type"]) or "").strip().lower()
     host = str(data.get("proxy_host", default["proxy_host"]) or "").strip()
     port = str(data.get("proxy_port", "") or "").strip()
+    if not proxy_type:
+        proxy_type = default["proxy_type"]
     if not host:
         host = default["proxy_host"]
-    return {"proxy_host": host, "proxy_port": port}
+    return {"proxy_type": proxy_type, "proxy_host": host, "proxy_port": port}
 
 
-def _resolve_http_proxy() -> str | None:
-    """Resolve proxy URL; return None when proxy port is empty."""
+def _resolve_proxy_settings() -> dict[str, str]:
+    """Resolve proxy mode and URL from config."""
     config = _load_proxy_config()
+    proxy_type = config.get("proxy_type", "http").lower()
+    proxy_host = config.get("proxy_host", "127.0.0.1")
     proxy_port = config.get("proxy_port", "")
+
     if not proxy_port:
-        return None
+        return {"mode": "direct", "proxy": ""}
+
+    if proxy_type not in {"http", "socks5", "socks5h"}:
+        return {"mode": "direct", "proxy": ""}
 
     try:
         port_value = int(proxy_port)
     except ValueError:
-        return None
+        return {"mode": "direct", "proxy": ""}
 
     if not (1 <= port_value <= 65535):
-        return None
+        return {"mode": "direct", "proxy": ""}
 
-    proxy_host = config.get("proxy_host", "127.0.0.1")
-    return f"http://{proxy_host}:{port_value}"
+    if proxy_type == "http":
+        return {
+            "mode": "http-proxy",
+            "proxy": f"http://{proxy_host}:{port_value}",
+        }
+
+    return {
+        "mode": "socks5-proxy",
+        "proxy": f"{proxy_type}://{proxy_host}:{port_value}",
+    }
 
 
-def _proxy_debug(proxy: str | None) -> dict[str, str]:
+def _proxy_debug(settings: dict[str, str]) -> dict[str, str]:
     """Build lightweight debug info for online request failures."""
     return {
-        "proxy_mode": "http-proxy" if proxy else "direct",
-        "proxy": proxy or "",
+        "proxy_mode": settings.get("mode", "direct"),
+        "proxy": settings.get("proxy", ""),
         "config_path": _CONFIG_PATH,
     }
+
+
+def _build_socks_connector(proxy_url: str):
+    """Build socks connector from aiohttp-socks when available."""
+    try:
+        module = import_module("aiohttp_socks")
+    except ImportError:
+        return None
+    return module.ProxyConnector.from_url(proxy_url)
 
 
 def _normalize_online_tags(items: list[dict]) -> list[dict[str, int | str]]:
@@ -124,23 +151,52 @@ async def get_online_tags(request: web.Request) -> web.Response:
         "only": "name,post_count,category",
     }
 
-    proxy = _resolve_http_proxy()
-    proxy_debug = _proxy_debug(proxy)
+    proxy_settings = _resolve_proxy_settings()
+    proxy_mode = proxy_settings.get("mode", "direct")
+    proxy_url = proxy_settings.get("proxy", "")
+    proxy_debug = _proxy_debug(proxy_settings)
     timeout = ClientTimeout(total=8)
 
     try:
-        async with ClientSession(timeout=timeout) as session:
-            async with session.get(_ONLINE_API, params=params, proxy=proxy) as response:
-                if response.status != 200:
-                    return web.json_response(
-                        {
-                            "error": "Danbooru upstream error",
-                            "status": response.status,
-                            **proxy_debug,
-                        },
-                        status=502,
-                    )
-                data = await response.json()
+        if proxy_mode == "socks5-proxy":
+            connector = _build_socks_connector(proxy_url)
+            if connector is None:
+                return web.json_response(
+                    {
+                        "error": "socks5 proxy requires aiohttp-socks",
+                        **proxy_debug,
+                    },
+                    status=500,
+                )
+            async with ClientSession(timeout=timeout, connector=connector) as session:
+                async with session.get(_ONLINE_API, params=params) as response:
+                    if response.status != 200:
+                        return web.json_response(
+                            {
+                                "error": "Danbooru upstream error",
+                                "status": response.status,
+                                **proxy_debug,
+                            },
+                            status=502,
+                        )
+                    data = await response.json()
+        else:
+            async with ClientSession(timeout=timeout) as session:
+                async with session.get(
+                    _ONLINE_API,
+                    params=params,
+                    proxy=proxy_url or None,
+                ) as response:
+                    if response.status != 200:
+                        return web.json_response(
+                            {
+                                "error": "Danbooru upstream error",
+                                "status": response.status,
+                                **proxy_debug,
+                            },
+                            status=502,
+                        )
+                    data = await response.json()
     except ClientError as error:
         return web.json_response(
             {
