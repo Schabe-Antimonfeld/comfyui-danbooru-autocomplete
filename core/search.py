@@ -16,7 +16,7 @@ def search_tags(tags: Sequence[TagTuple], query: str, limit: int) -> List[Dict[s
     prefix_hits: List[Dict[str, int | str]] = []
     contain_hits: List[Dict[str, int | str]] = []
 
-    for raw, display, count, category in tags:
+    for raw, display, category, count in tags:
         raw_l = raw.lower()
         disp_l = display.lower()
 
@@ -34,7 +34,7 @@ def search_tags(tags: Sequence[TagTuple], query: str, limit: int) -> List[Dict[s
             or query in disp_l
         )
 
-        item = {"tag": display, "raw": raw, "count": count, "category": category}
+        item = {"tag": display, "raw": raw, "category": category, "count": count}
         if is_prefix:
             prefix_hits.append(item)
         elif is_contain:

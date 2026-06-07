@@ -1,4 +1,5 @@
-from . import routes  # noqa: F401
+if __package__:
+    from . import routes  # noqa: F401
 
 
 WEB_DIRECTORY = "web"
