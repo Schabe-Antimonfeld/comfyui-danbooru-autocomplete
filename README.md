@@ -1,5 +1,8 @@
 # ComfyUI Danbooru Autocomplete
 
+[![tests](https://github.com/Schabe-Antimonfeld/comfyui-danbooru-autocomplete/actions/workflows/tests.yml/badge.svg)](https://github.com/Schabe-Antimonfeld/comfyui-danbooru-autocomplete/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/Schabe-Antimonfeld/comfyui-danbooru-autocomplete/branch/main/graph/badge.svg)](https://codecov.io/gh/Schabe-Antimonfeld/comfyui-danbooru-autocomplete)
+
 在 **CLIP 文本编码节点**（CLIPTextEncode）中实现基于 Danbooru 词库的自动补全功能。
 
 ## 功能特性
