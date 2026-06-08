@@ -83,11 +83,11 @@ function showDropdown(items, query, source) {
   if (!items.length || !activeTextarea) { hideDropdown(); return; }
 
   const srcLabel = source === "online"
-    ? `<span class="dac-header-src online">● Danbooru Live</span>`
-    : `<span class="dac-header-src local">● Local</span>`;
+    ? /* html */ `<span class="dac-header-src online">● Danbooru Live</span>`
+    : /* html */ `<span class="dac-header-src local">● Local</span>`;
   const hdr = document.createElement("div");
   hdr.className = "dac-header";
-  hdr.innerHTML = `<span>Danbooru  ·  ${items.length} tags</span>${srcLabel}`;
+  hdr.innerHTML = /* html */ `<span>Danbooru  ·  ${items.length} tags</span>${srcLabel}`;
   dd.appendChild(hdr);
 
   const lq = query.toLowerCase();
@@ -105,7 +105,7 @@ function showDropdown(items, query, source) {
       ? `${esc(t.slice(0, li))}<em>${esc(t.slice(li, li + query.length))}</em>${esc(t.slice(li + query.length))}`
       : esc(t);
 
-    el.innerHTML = `
+    el.innerHTML = /* html */ `
       <span class="dac-tag">${hi}</span>
       <span class="dac-cnt">${fmtCount(item.count)}</span>
       <span class="dac-cat" style="background:${color}1a;color:${color};border:1px solid ${color}55">${cat}</span>`;

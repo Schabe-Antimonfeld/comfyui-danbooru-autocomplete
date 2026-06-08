@@ -8,7 +8,7 @@ from aiohttp import ClientError, ClientSession, ClientTimeout, web
 from .loader import load_tags, to_display
 from .search import search_tags
 
-_PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
+_PLUGIN_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _DATA_PATH = os.path.join(_PLUGIN_DIR, "data")
 _CONFIG_PATH = os.path.join(_PLUGIN_DIR, "configs", "proxy_config.json")
 _ONLINE_API = "https://danbooru.donmai.us/tags.json"

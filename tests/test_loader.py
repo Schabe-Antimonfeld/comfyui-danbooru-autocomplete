@@ -62,12 +62,12 @@ def test_load_csv(tmp_path):
     ]
 
 def test_load_tags_dir_missing(tmp_path):
-    missing_dir = tmp_path / "missing"
+    missing_dir = Path(tmp_path, "missing")
     assert load_tags(str(missing_dir)) == []
 
 def test_load_tags(tmp_path):
-    txt = tmp_path / "a.txt"
-    csv = tmp_path / "b.csv"
+    txt = Path(tmp_path, "a.txt")
+    csv = Path(tmp_path, "b.csv")
 
     txt.write_text(
         dedent('''\
