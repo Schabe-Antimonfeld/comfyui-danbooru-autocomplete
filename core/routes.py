@@ -5,8 +5,8 @@ from importlib import import_module
 import server  # type: ignore
 from aiohttp import ClientError, ClientSession, ClientTimeout, web
 
-from .core.loader import load_tags, to_display
-from .core.search import search_tags
+from .loader import load_tags, to_display
+from .search import search_tags
 
 _PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 _DATA_PATH = os.path.join(_PLUGIN_DIR, "data")

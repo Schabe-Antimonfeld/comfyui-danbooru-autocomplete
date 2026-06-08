@@ -1,5 +1,5 @@
 if __package__:
-    from . import routes  # noqa: F401  # pragma: no cover
+    from .core import routes  # noqa: F401  # pragma: no cover
 
 
 WEB_DIRECTORY = "web"

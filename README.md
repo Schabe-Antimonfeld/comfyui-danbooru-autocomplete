@@ -2,6 +2,10 @@
 
 [![tests](https://github.com/Schabe-Antimonfeld/comfyui-danbooru-autocomplete/actions/workflows/tests.yml/badge.svg)](https://github.com/Schabe-Antimonfeld/comfyui-danbooru-autocomplete/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/Schabe-Antimonfeld/comfyui-danbooru-autocomplete/branch/main/graph/badge.svg)](https://codecov.io/gh/Schabe-Antimonfeld/comfyui-danbooru-autocomplete)
+![Python](https://img.shields.io/badge/python-3.12%2B-blue)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Stars](https://badgen.net/github/stars/Schabe-Antimonfeld/comfyui-danbooru-autocomplete)](https://github.com/Schabe-Antimonfeld/comfyui-danbooru-autocomplete/stargazers)
+![Status](https://img.shields.io/badge/status-active-brightgreen)
 
 在 **CLIP 文本编码节点**（CLIPTextEncode）中实现基于 Danbooru 词库的自动补全功能。
 

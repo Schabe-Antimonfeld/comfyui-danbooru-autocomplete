@@ -1,0 +1,18 @@
+[project]
+name = "comfyui-danbooru-autocomplete"
+description = "在 CLIP 文本编码节点（CLIPTextEncode）中实现基于 Danbooru 词库的自动补全功能"
+version = "0.1.0"
+license = "MIT" 
+
+dependencies = ["aiohttp-socks>=0.10.0"]
+
+[project.urls]
+Repository = "https://github.com/Schabe-Antimonfeld/comfyui-danbooru-autocomplete"
+
+[tool]
+[tool.comfy]
+PublisherId = "schabe-antimonfeld"
+DisplayName = "comfyui-danbooru-autocomplete"
+Icon = ""
+includes = []
+
