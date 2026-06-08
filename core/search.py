@@ -3,13 +3,15 @@ from typing import Dict, List, Sequence
 from .loader import TagTuple
 
 
-def search_tags(tags: Sequence[TagTuple], query: str, limit: int) -> List[Dict[str, int | str]]:
-    '''在标签列表中搜索匹配的标签
+def search_tags(
+    tags: Sequence[TagTuple], query: str, limit: int
+) -> List[Dict[str, int | str]]:
+    """在标签列表中搜索匹配的标签
     @param tags: 标签列表
     @param query: 搜索查询
     @param limit: 返回结果的最大数量
     @return: 匹配的标签列表
-    '''
+    """
     query_with_us = query.replace(" ", "_")
     query_with_sp = query.replace("_", " ")
 

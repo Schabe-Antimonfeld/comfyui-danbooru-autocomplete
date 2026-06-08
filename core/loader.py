@@ -76,11 +76,11 @@ def load_csv(file_path: str) -> List[TagTuple]:
 
 
 def load_tags(data_path: str) -> List[TagTuple]:
-    '''
+    """
     加载数据目录中的所有tag
     @param data_path: 数据目录路径
     @return: 加载的tag列表，每个元素为(raw, display, category, count)的元组
-    '''
+    """
     normalized_path = os.path.normpath(data_path)
     if not os.path.isdir(normalized_path):
         return []

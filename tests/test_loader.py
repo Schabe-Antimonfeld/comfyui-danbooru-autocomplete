@@ -8,10 +8,12 @@ def test_to_display():
     assert to_display("natsusaki_yomi") == "natsusaki yomi"
     assert to_display("fate_(series)") == "fate \(series\)"
 
+
 def test_load_txt(tmp_path):
     file = Path(tmp_path, "tags.txt")
     file.write_text(
-        dedent('''\
+        dedent(
+            """\
             purple_pantyhose,0,7108\n
             kinomoto_sakura,4,7103\n
             ushio_(kancolle),4,7102\n
@@ -20,9 +22,9 @@ def test_load_txt(tmp_path):
             bad_count,abc,def\n
             missing_fields\n
             ,1,14514\n
-        '''
+        """
         ),
-        encoding="utf-8"
+        encoding="utf-8",
     )
     assert load_txt(str(file)) == [
         ("purple_pantyhose", "purple pantyhose", 0, 7108),
@@ -34,10 +36,12 @@ def test_load_txt(tmp_path):
         ("missing_fields", "missing fields", 0, 0),
     ]
 
+
 def test_load_csv(tmp_path):
     file = Path(tmp_path, "tags.csv")
     file.write_text(
-        dedent('''\
+        dedent(
+            """\
             raw,category,count\n
             purple_pantyhose,0,7108\n
             kinomoto_sakura,4,7103\n
@@ -47,9 +51,9 @@ def test_load_csv(tmp_path):
             bad_count,abc,def\n
             missing_fields\n
             ,1,14514\n
-        '''
+        """
         ),
-        encoding="utf-8"
+        encoding="utf-8",
     )
     assert load_csv(str(file)) == [
         ("purple_pantyhose", "purple pantyhose", 0, 7108),
@@ -61,16 +65,19 @@ def test_load_csv(tmp_path):
         ("missing_fields", "missing fields", 0, 0),
     ]
 
+
 def test_load_tags_dir_missing(tmp_path):
     missing_dir = Path(tmp_path, "missing")
     assert load_tags(str(missing_dir)) == []
+
 
 def test_load_tags(tmp_path):
     txt = Path(tmp_path, "a.txt")
     csv = Path(tmp_path, "b.csv")
 
     txt.write_text(
-        dedent('''\
+        dedent(
+            """\
             purple_pantyhose,0,7108\n
             kinomoto_sakura,4,7103\n
             ushio_(kancolle),4,7102\n
@@ -79,13 +86,14 @@ def test_load_tags(tmp_path):
             bad_count,abc,def\n
             missing_fields\n
             ,1,14514\n
-        '''
+        """
         ),
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
     csv.write_text(
-        dedent('''\
+        dedent(
+            """\
             raw,category,count\n
             purple_pantyhose,0,7103\n
             kinomoto_sakura,4,7103\n
@@ -95,9 +103,9 @@ def test_load_tags(tmp_path):
             bad_count,abc,def\n
             missing_fields\n
             ,1,14514\n
-        '''
+        """
         ),
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
     result = load_tags(str(tmp_path))

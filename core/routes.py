@@ -26,7 +26,9 @@ def _load_proxy_config() -> dict[str, str]:
     except (OSError, ValueError, json.JSONDecodeError):
         return default
 
-    proxy_type = str(data.get("proxy_type", default["proxy_type"]) or "").strip().lower()
+    proxy_type = (
+        str(data.get("proxy_type", default["proxy_type"]) or "").strip().lower()
+    )
     host = str(data.get("proxy_host", default["proxy_host"]) or "").strip()
     port = str(data.get("proxy_port", "") or "").strip()
     if not proxy_type:
@@ -105,13 +107,13 @@ def _normalize_online_tags(items: list[dict]) -> list[dict[str, int | str]]:
 
 
 @server.PromptServer.instance.routes.get("/danbooru-autocomplete/tags")
-async def get_tags(request: web.Request)->web.Response:
-    '''处理标签搜索请求
+async def get_tags(request: web.Request) -> web.Response:
+    """处理标签搜索请求
     @param request: HTTP请求对象，包含查询参数:
         - q: 搜索查询字符串
         - limit: 返回结果的最大数量（可选，默认为20，最大为50）
     @return: JSON响应，包含匹配的标签列表
-    '''
+    """
     query = request.rel_url.query.get("q", "").strip().lower()
     try:
         limit = max(1, min(50, int(request.rel_url.query.get("limit", 20))))
@@ -222,17 +224,21 @@ async def get_online_tags(request: web.Request) -> web.Response:
 
 
 @server.PromptServer.instance.routes.get("/danbooru-autocomplete/status")
-async def get_status(request: web.Request)->web.Response:
-    '''提供插件状态信息接口
+async def get_status(request: web.Request) -> web.Response:
+    """提供插件状态信息接口
     @param request: HTTP请求对象
     @return: JSON响应，包含插件状态信息，如标签数量、数据文件列表等
-    '''
+    """
     tags = load_tags(_DATA_PATH)
-    files = [
-        file
-        for file in os.listdir(_DATA_PATH)
-        if file.endswith(".txt") or file.endswith(".csv")
-    ] if os.path.isdir(_DATA_PATH) else []
+    files = (
+        [
+            file
+            for file in os.listdir(_DATA_PATH)
+            if file.endswith(".txt") or file.endswith(".csv")
+        ]
+        if os.path.isdir(_DATA_PATH)
+        else []
+    )
 
     return web.json_response(
         {
