@@ -215,6 +215,5 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-.github/
 .vscode/
 APIKEY.txt
