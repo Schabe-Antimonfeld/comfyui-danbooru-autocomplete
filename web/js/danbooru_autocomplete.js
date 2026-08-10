@@ -1,3 +1,5 @@
+import { app } from "../../../scripts/app.js";
+
 const CATEGORY_COLORS = {
   0: "#4e9af1",
   1: "#f1964e",
@@ -13,6 +15,13 @@ const ONLINE_API = "/danbooru-autocomplete/online-tags";
 const LOCAL_API = "/danbooru-autocomplete/tags";
 const ONLINE_FAIL_THRESHOLD = 3;
 const ONLINE_RETRY_MS = 60_000;
+
+const SETTING_IDS = {
+  enableOnline: "autocomplete.network.enable_online",
+  proxyType: "autocomplete.network.proxy_type",
+  proxyHost: "autocomplete.network.proxy_host",
+  proxyPort: "autocomplete.network.proxy_port",
+};
 
 let dropdownEl = null;
 let activeTextarea = null;
@@ -206,8 +215,15 @@ function isOnlineAvailable() {
 }
 
 async function fetchFromDanbooru(query, signal) {
+  const params = new URLSearchParams({
+    q: query,
+    limit: "20",
+    proxy_type: app.ui.settings.getSettingValue(SETTING_IDS.proxyType, "none"),
+    proxy_host: app.ui.settings.getSettingValue(SETTING_IDS.proxyHost, "127.0.0.1"),
+    proxy_port: app.ui.settings.getSettingValue(SETTING_IDS.proxyPort, "7890"),
+  });
   const r = await fetch(
-    `${ONLINE_API}?q=${encodeURIComponent(query)}&limit=20`,
+    `${ONLINE_API}?${params}`,
     { signal }
   );
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -230,7 +246,11 @@ async function fetchTags(query) {
   abortCtrl = new AbortController();
   const signal = abortCtrl.signal;
 
-  if (isOnlineAvailable()) {
+  const enableOnline = app.ui.settings.getSettingValue(
+    SETTING_IDS.enableOnline,
+    true
+  );
+  if (enableOnline && isOnlineAvailable()) {
     try {
       const items = await fetchFromDanbooru(query, signal);
       onlineFailCount = 0;
@@ -400,3 +420,43 @@ if (typeof window.__comfy_extension !== "undefined" ||
 }
 
 setTimeout(() => scanAndBind(document), 2000);
+
+app.registerExtension({
+    name: "ComfyUI Danbooru Autocomplete",
+    settings: [
+        {
+            id: "autocomplete.network.enable_online",
+            name: "联网补全",
+            type: "boolean",
+            defaultValue: true,
+            category: ["自动补全", "网络", "联网补全"],
+        },
+        {
+            id: "autocomplete.network.proxy_type",
+            name: "代理类型",
+            type: "combo",
+            defaultValue: "none",
+            options: [
+                "none",
+                "http",
+                "socks5",
+                "socks5h",
+            ],
+            category: ["自动补全", "网络", "代理类型"],
+        },
+        {
+            id: "autocomplete.network.proxy_host",
+            name: "代理服务器",
+            type: "text",
+            defaultValue: "127.0.0.1",
+            category: ["自动补全", "网络", "代理服务器"],
+        },
+        {
+            id: "autocomplete.network.proxy_port",
+            name: "代理端口",
+            type: "text",
+            defaultValue: "7890",
+            category: ["自动补全", "网络", "代理端口"],
+        },
+    ],
+})

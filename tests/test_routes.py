@@ -72,73 +72,6 @@ def response_json(response):
     return json.loads(response.text)
 
 
-def test_load_proxy_config_missing(routes, monkeypatch, tmp_path):
-    monkeypatch.setattr(routes, "_CONFIG_PATH", str(tmp_path / "missing.json"))
-
-    assert routes._load_proxy_config() == {
-        "proxy_type": "http",
-        "proxy_host": "127.0.0.1",
-        "proxy_port": "",
-    }
-
-
-def test_load_proxy_config_normalizes(routes, monkeypatch, tmp_path):
-    config_file = tmp_path / "proxy_config.json"
-    config_file.write_text(
-        json.dumps(
-            {
-                "proxy_type": " SOCKS5H ",
-                "proxy_host": " 127.0.0.2 ",
-                "proxy_port": " 1080 ",
-            }
-        ),
-        encoding="utf-8",
-    )
-
-    monkeypatch.setattr(routes, "_CONFIG_PATH", str(config_file))
-
-    assert routes._load_proxy_config() == {
-        "proxy_type": "socks5h",
-        "proxy_host": "127.0.0.2",
-        "proxy_port": "1080",
-    }
-
-
-def test_load_proxy_config_empty(routes, monkeypatch, tmp_path):
-    config_file = tmp_path / "proxy_config.json"
-    config_file.write_text(
-        json.dumps(
-            {
-                "proxy_type": "",
-                "proxy_host": "",
-                "proxy_port": "1080",
-            }
-        ),
-        encoding="utf-8",
-    )
-
-    monkeypatch.setattr(routes, "_CONFIG_PATH", str(config_file))
-
-    assert routes._load_proxy_config() == {
-        "proxy_type": "http",
-        "proxy_host": "127.0.0.1",
-        "proxy_port": "1080",
-    }
-
-
-def test_load_proxy_config_bad_json(routes, monkeypatch, tmp_path):
-    config_file = tmp_path / "proxy_config.json"
-    config_file.write_text("{bad json", encoding="utf-8")
-
-    monkeypatch.setattr(routes, "_CONFIG_PATH", str(config_file))
-
-    assert routes._load_proxy_config() == {
-        "proxy_type": "http",
-        "proxy_host": "127.0.0.1",
-        "proxy_port": "",
-    }
-
-
 @pytest.mark.parametrize(
     "config, expected",
     [
@@ -173,14 +106,10 @@ def test_load_proxy_config_bad_json(routes, monkeypatch, tmp_path):
     ],
 )
 def test_resolve_proxy_settings(routes, monkeypatch, config, expected):
-    monkeypatch.setattr(routes, "_load_proxy_config", lambda: config)
-
-    assert routes._resolve_proxy_settings() == expected
+    assert routes._resolve_proxy_settings(config) == expected
 
 
-def test_proxy_debug(routes, monkeypatch):
-    monkeypatch.setattr(routes, "_CONFIG_PATH", "configs/proxy_config.json")
-
+def test_proxy_debug(routes):
     assert routes._proxy_debug(
         {
             "mode": "http-proxy",
@@ -189,7 +118,6 @@ def test_proxy_debug(routes, monkeypatch):
     ) == {
         "proxy_mode": "http-proxy",
         "proxy": "http://127.0.0.1:7890",
-        "config_path": "configs/proxy_config.json",
     }
 
 
@@ -336,13 +264,12 @@ def test_get_online_tags_no_socks(routes, monkeypatch):
     monkeypatch.setattr(
         routes,
         "_resolve_proxy_settings",
-        lambda: {
+        lambda _config: {
             "mode": "socks5-proxy",
             "proxy": "socks5://127.0.0.1:1080",
         },
     )
     monkeypatch.setattr(routes, "_build_socks_connector", lambda _proxy_url: None)
-    monkeypatch.setattr(routes, "_CONFIG_PATH", "configs/proxy_config.json")
 
     response = asyncio.run(routes.get_online_tags(make_request({"q": "blue"})))
     body = response_json(response)
@@ -408,7 +335,7 @@ def test_get_online_tags_direct(routes, monkeypatch):
     monkeypatch.setattr(
         routes,
         "_resolve_proxy_settings",
-        lambda: {
+        lambda _config: {
             "mode": "direct",
             "proxy": "",
         },
@@ -445,7 +372,7 @@ def test_get_online_tags_bad_limit(routes, monkeypatch):
     monkeypatch.setattr(
         routes,
         "_resolve_proxy_settings",
-        lambda: {
+        lambda _config: {
             "mode": "direct",
             "proxy": "",
         },
@@ -463,17 +390,20 @@ def test_get_online_tags_bad_limit(routes, monkeypatch):
 def test_get_online_tags_http_proxy(routes, monkeypatch):
     reset_fake_client_session()
 
-    monkeypatch.setattr(
-        routes,
-        "_resolve_proxy_settings",
-        lambda: {
-            "mode": "http-proxy",
-            "proxy": "http://127.0.0.1:7890",
-        },
-    )
     monkeypatch.setattr(routes, "ClientSession", FakeClientSession)
 
-    response = asyncio.run(routes.get_online_tags(make_request({"q": "blue"})))
+    response = asyncio.run(
+        routes.get_online_tags(
+            make_request(
+                {
+                    "q": "blue",
+                    "proxy_type": "http",
+                    "proxy_host": "127.0.0.1",
+                    "proxy_port": "7890",
+                }
+            )
+        )
+    )
 
     assert response.status == 200
     assert FakeClientSession.calls[0]["proxy"] == "http://127.0.0.1:7890"
@@ -487,7 +417,7 @@ def test_get_online_tags_socks_proxy(routes, monkeypatch):
     monkeypatch.setattr(
         routes,
         "_resolve_proxy_settings",
-        lambda: {
+        lambda _config: {
             "mode": "socks5-proxy",
             "proxy": "socks5://127.0.0.1:1080",
         },
@@ -511,14 +441,13 @@ def test_get_online_tags_socks_status(routes, monkeypatch):
     monkeypatch.setattr(
         routes,
         "_resolve_proxy_settings",
-        lambda: {
+        lambda _config: {
             "mode": "socks5-proxy",
             "proxy": "socks5://127.0.0.1:1080",
         },
     )
     monkeypatch.setattr(routes, "_build_socks_connector", lambda _proxy_url: connector)
     monkeypatch.setattr(routes, "ClientSession", FakeClientSession)
-    monkeypatch.setattr(routes, "_CONFIG_PATH", "configs/proxy_config.json")
 
     response = asyncio.run(routes.get_online_tags(make_request({"q": "blue"})))
     body = response_json(response)
@@ -537,13 +466,12 @@ def test_get_online_tags_upstream_status(routes, monkeypatch):
     monkeypatch.setattr(
         routes,
         "_resolve_proxy_settings",
-        lambda: {
+        lambda _config: {
             "mode": "direct",
             "proxy": "",
         },
     )
     monkeypatch.setattr(routes, "ClientSession", FakeClientSession)
-    monkeypatch.setattr(routes, "_CONFIG_PATH", "configs/proxy_config.json")
 
     response = asyncio.run(routes.get_online_tags(make_request({"q": "blue"})))
     body = response_json(response)
@@ -562,7 +490,7 @@ def test_get_online_tags_bad_data(routes, monkeypatch):
     monkeypatch.setattr(
         routes,
         "_resolve_proxy_settings",
-        lambda: {
+        lambda _config: {
             "mode": "direct",
             "proxy": "",
         },
@@ -590,7 +518,7 @@ def test_get_online_tags_client_error(routes, monkeypatch):
     monkeypatch.setattr(
         routes,
         "_resolve_proxy_settings",
-        lambda: {
+        lambda _config: {
             "mode": "direct",
             "proxy": "",
         },
@@ -598,7 +526,6 @@ def test_get_online_tags_client_error(routes, monkeypatch):
     monkeypatch.setattr(
         routes, "ClientSession", lambda *args, **kwargs: ClientErrorSession()
     )
-    monkeypatch.setattr(routes, "_CONFIG_PATH", "configs/proxy_config.json")
 
     response = asyncio.run(routes.get_online_tags(make_request({"q": "blue"})))
     body = response_json(response)
@@ -623,7 +550,7 @@ def test_get_online_tags_timeout(routes, monkeypatch):
     monkeypatch.setattr(
         routes,
         "_resolve_proxy_settings",
-        lambda: {
+        lambda _config: {
             "mode": "direct",
             "proxy": "",
         },
@@ -631,7 +558,6 @@ def test_get_online_tags_timeout(routes, monkeypatch):
     monkeypatch.setattr(
         routes, "ClientSession", lambda *args, **kwargs: TimeoutSession()
     )
-    monkeypatch.setattr(routes, "_CONFIG_PATH", "configs/proxy_config.json")
 
     response = asyncio.run(routes.get_online_tags(make_request({"q": "blue"})))
     body = response_json(response)

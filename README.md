@@ -1,11 +1,11 @@
 # ComfyUI Danbooru Autocomplete
 
+![Status](https://img.shields.io/badge/status-active-brightgreen)
 [![tests](https://github.com/Schabe-Antimonfeld/comfyui-danbooru-autocomplete/actions/workflows/tests.yml/badge.svg)](https://github.com/Schabe-Antimonfeld/comfyui-danbooru-autocomplete/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/Schabe-Antimonfeld/comfyui-danbooru-autocomplete/branch/main/graph/badge.svg)](https://codecov.io/gh/Schabe-Antimonfeld/comfyui-danbooru-autocomplete)
 ![Python](https://img.shields.io/badge/python-3.12%2B-blue)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Stars](https://badgen.net/github/stars/Schabe-Antimonfeld/comfyui-danbooru-autocomplete)](https://github.com/Schabe-Antimonfeld/comfyui-danbooru-autocomplete/stargazers)
-![Status](https://img.shields.io/badge/status-active-brightgreen)
+![License](https://img.shields.io/github/license/Schabe-Antimonfeld/comfyui-danbooru-autocomplete)
+![Stars](https://img.shields.io/github/stars/Schabe-Antimonfeld/comfyui-danbooru-autocomplete)
 
 在 **CLIP 文本编码节点**（CLIPTextEncode）中实现基于 Danbooru 词库的自动补全功能。
 
@@ -63,36 +63,24 @@ git clone https://github.com/Schabe-Antimonfeld/comfyui-danbooru-autocomplete.gi
 
 ## 代理配置
 
-在线查询 Danbooru 使用后端接口 `/danbooru-autocomplete/online-tags`，代理由以下文件控制：
-
-- `configs/proxy_config.json`
-
-默认配置示例：
-
-```json
-{
-	"proxy_type": "http",
-	"proxy_host": "127.0.0.1",
-	"proxy_port": ""
-}
-```
+在线查询 Danbooru 使用后端接口 `/danbooru-autocomplete/online-tags`。联网开关和代理参数可在 ComfyUI 设置的“自动补全 / 网络”中配置，更改后即时生效。
 
 字段说明：
 
-- `proxy_type`：支持 `http`、`socks5`、`socks5h`
+- `proxy_type`：支持 `none(不使用代理)`、`http`、`socks5`、`socks5h`
 - `proxy_host`：代理主机地址，例如 `127.0.0.1`
 - `proxy_port`：代理端口；留空表示不使用代理（直连）
 
 行为规则：
 
-- `proxy_port` 为空、端口非法、或 `proxy_type` 非法时，自动切换为直连模式
+- `proxy_type` 为 `none`、`proxy_port` 为空、端口非法、或代理类型非法时，自动切换为直连模式
 - `socks5/socks5h` 需要 `aiohttp-socks`（已在 `requirements.txt` 中声明）
 - 在线请求超时（8 秒）或失败时，前端会自动回退到本地词库查询
 
 推荐场景：
 
 - 无法直接访问 Danbooru：配置 HTTP/SOCKS5 代理
-- 仅需本地词库：将 `proxy_port` 留空，插件会按直连失败后回退本地，稍作等待即可
+- 仅需本地词库：关闭“联网补全”
 - 网络不稳定：保持默认在线优先，插件会自动处理降级
 
 ## 常见问题
@@ -113,8 +101,8 @@ Danbooru 标签均为英文，暂时不支持中文搜索。
 以后有计划添加部分翻译与中文搜索功能。
 
 **Q: 配了代理但在线搜索仍失败？**
-- 检查 `configs/proxy_config.json` 是否为合法 JSON
-- 检查 `proxy_type` 是否为 `http` / `socks5`
+- 检查 ComfyUI 设置中的代理类型、服务器和端口
+- 检查 `proxy_type` 是否为 `http` / `socks5` / `socks5h`
 - 检查 `proxy_port` 是否为 1~65535 的整数
 - 若使用 SOCKS5，确认环境已安装 `aiohttp-socks`
 

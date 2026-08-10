@@ -1,4 +1,3 @@
-import json
 import os
 from importlib import import_module
 
@@ -10,40 +9,14 @@ from .search import search_tags
 
 _PLUGIN_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _DATA_PATH = os.path.join(_PLUGIN_DIR, "data")
-_CONFIG_PATH = os.path.join(_PLUGIN_DIR, "configs", "proxy_config.json")
 _ONLINE_API = "https://danbooru.donmai.us/tags.json"
 
 
-def _load_proxy_config() -> dict[str, str]:
-    """Load proxy config from ./configs/proxy_config.json."""
-    default = {"proxy_type": "http", "proxy_host": "127.0.0.1", "proxy_port": ""}
-    if not os.path.isfile(_CONFIG_PATH):
-        return default
-
-    try:
-        with open(_CONFIG_PATH, "r", encoding="utf-8") as file:
-            data = json.load(file)
-    except (OSError, ValueError, json.JSONDecodeError):
-        return default
-
-    proxy_type = (
-        str(data.get("proxy_type", default["proxy_type"]) or "").strip().lower()
-    )
-    host = str(data.get("proxy_host", default["proxy_host"]) or "").strip()
-    port = str(data.get("proxy_port", "") or "").strip()
-    if not proxy_type:
-        proxy_type = default["proxy_type"]
-    if not host:
-        host = default["proxy_host"]
-    return {"proxy_type": proxy_type, "proxy_host": host, "proxy_port": port}
-
-
-def _resolve_proxy_settings() -> dict[str, str]:
-    """Resolve proxy mode and URL from config."""
-    config = _load_proxy_config()
-    proxy_type = config.get("proxy_type", "http").lower()
-    proxy_host = config.get("proxy_host", "127.0.0.1")
-    proxy_port = config.get("proxy_port", "")
+def _resolve_proxy_settings(config) -> dict[str, str]:
+    """Resolve proxy mode and URL from request settings."""
+    proxy_type = str(config.get("proxy_type", "none") or "").strip().lower()
+    proxy_host = str(config.get("proxy_host", "127.0.0.1") or "").strip()
+    proxy_port = str(config.get("proxy_port", "") or "").strip()
 
     if not proxy_port:
         return {"mode": "direct", "proxy": ""}
@@ -76,7 +49,6 @@ def _proxy_debug(settings: dict[str, str]) -> dict[str, str]:
     return {
         "proxy_mode": settings.get("mode", "direct"),
         "proxy": settings.get("proxy", ""),
-        "config_path": _CONFIG_PATH,
     }
 
 
@@ -153,7 +125,7 @@ async def get_online_tags(request: web.Request) -> web.Response:
         "only": "name,post_count,category",
     }
 
-    proxy_settings = _resolve_proxy_settings()
+    proxy_settings = _resolve_proxy_settings(request.rel_url.query)
     proxy_mode = proxy_settings.get("mode", "direct")
     proxy_url = proxy_settings.get("proxy", "")
     proxy_debug = _proxy_debug(proxy_settings)
